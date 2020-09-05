@@ -9,7 +9,5 @@ const OptionsPanel = (props) => (
     <Button playing={props.playing} startGame={props.startGame} />
   </div>
 )
-  
-  
 
 export default OptionsPanel

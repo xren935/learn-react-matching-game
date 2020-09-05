@@ -1,30 +1,64 @@
 import React, { Component } from 'react';
-import OptionsPanel from '../OptionsPanel';
-import Board from '../Board';
-import { createTiles } from '../../misc/utils'; 
+import OptionsPanel from '../OptionsPanel'
+import Board from '../Board'
+import { createTiles, indexOfSelected } from '../../misc/utils'
+
 import './App.css';
 
-
 class App extends Component{
-  constructor(props){
-    //initializing the component 
-    super(props); 
+  constructor(props) {
+    super(props)
+
     this.state = {
-      playing = false, 
-      numTiles = 36, 
-      tiles = [],
-      previousTileIndex = null,
-      toBeCleared = null
-   } 
+      numTiles: 36,
+      playing: false,
+      previousTileIndex: null,
+      tiles: [],
+      toBeCleared: null
+    }
+  }
+
+  handleTileClicked = (id, color) => {
+    this.setState((state) => {
+      const tiles = state.tiles
+      let toBeCleared = state.toBeCleared
+      const selectedTileIndex = indexOfSelected(tiles, id, color)
+      let previousTileIndex = state.previousTileIndex
+
+      if(toBeCleared !== null) {
+        tiles[toBeCleared[0]].selected = false
+        tiles[toBeCleared[1]].selected = false
+        toBeCleared = null
+      }
+
+      tiles[selectedTileIndex].selected = true
+
+      if(previousTileIndex !== null) {
+        const previousTile = tiles[previousTileIndex]
+        const selectedTile = tiles[selectedTileIndex]
+
+        if(previousTile.id !== selectedTile.id &&  previousTile.color === color) {
+          selectedTile.matched = true
+          previousTile.matched = true
+          previousTileIndex = null
+        } else {
+          toBeCleared = [previousTileIndex, selectedTileIndex]
+          previousTileIndex = null
+        }
+      } else {
+        previousTileIndex = selectedTileIndex
+      }
+
+      return {toBeCleared, tiles, previousTileIndex}
+    })
   }
 
   startGame = (numTiles) => {
-    //initializing the starting state 
     this.setState((state) => ({
-      playing: true, 
-      previousTileIndex: null, 
-      toBeCleared: null, 
-      tiles = createTiles(state.numTiles) //imported createTiles method and passing in numTiles to it
+      playing: true,
+      previousTileIndex: null,
+      toBeCleared: null,
+      tiles: createTiles(state.numTiles, this.handleTileClicked)
     }))
   }
 
@@ -34,9 +68,8 @@ class App extends Component{
       <header className="App-header">
         Turbo-Matcher
       </header>
-        <OptionsPanel playing={this.state.playing} numTiles={this.state.numTiles} startGame={this.startGame}/>
-        <Board numTiles={this.state.numTiles} tiles={this.state.tiles}/>
- 
+        <OptionsPanel playing={this.state.playing} numTiles={this.state.numTiles} startGame={this.startGame} />
+        <Board numTiles={this.state.numTiles} tiles={this.state.tiles} />
     </div>
   );
 
